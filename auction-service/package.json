@@ -3,5 +3,10 @@
     "esbuild": "^0.14.25",
     "serverless-esbuild": "^1.25.0"
   },
-  "name": "auction-service"
+  "name": "auction-service",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.533.0",
+    "@aws-sdk/lib-dynamodb": "^3.533.0",
+    "uuid": "^9.0.1"
+  }
 }
