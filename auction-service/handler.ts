@@ -1,6 +1,6 @@
-export async function hello(event) {
+export async function createAuction(event, context) {
   return {
-    message: 'Go Serverless v3! Your function executed successfully!',
-    input: event,
+    statusCode: 200,
+    body: JSON.stringify({ event, context })
   };
 }
