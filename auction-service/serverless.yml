@@ -6,6 +6,20 @@ provider:
   runtime: nodejs18.x
   region: ap-southeast-2
 
+resources:
+  Resources:
+    AuctionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: AuctionsTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+
 functions:
   createAuction:
     handler: handler.createAuction
