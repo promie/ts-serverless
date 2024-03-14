@@ -5,6 +5,11 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: ap-southeast-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+      Resource: "arn:aws:dynamodb:${self:provider.region}:035230278311:table/AuctionsTable"
 
 resources:
   Resources:
