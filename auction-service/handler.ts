@@ -25,7 +25,7 @@ export async function createAuction(event) {
   const docClient = DynamoDBDocumentClient.from(client);
 
   const params = {
-    TableName: "AuctionsTable",
+    TableName: process.env.AUCTIONS_TABLE_NAME,
     Item: auction,
   };
 
