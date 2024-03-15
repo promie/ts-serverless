@@ -12,7 +12,7 @@ provider:
     - Effect: Allow
       Action:
         - dynamodb:PutItem
-      Resource: {self:custom.AuctionsTable.arn}
+      Resource: ${self:custom.AuctionsTable.arn}
 
 resources:
   Resources:
@@ -42,4 +42,4 @@ plugins:
 custom:
   AuctionsTable:
     name: !Ref AuctionsTable
-    arn: !GetAtt AuctionsTable.Arn*
+    arn: !GetAtt AuctionsTable.Arn
