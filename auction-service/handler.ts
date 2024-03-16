@@ -5,9 +5,13 @@ import { DynamoDBDocumentClient, PutCommand, ScanCommand, GetCommand } from "@aw
 import commonMiddleware from "./lib/commonMiddleware";
 import * as createError from 'http-errors';
 
+interface IAuction {
+  title: string;
+}
+
 export async function createAuction(event: APIGatewayProxyEvent) {
 
-  const body = event.body as unknown as { title: string };
+  const body = event.body as unknown as IAuction
   const { title } = body;
   const now = new Date();
 
