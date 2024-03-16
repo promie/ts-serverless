@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import commonMiddleware from "./lib/commonMiddleware";
+import { docClient } from "./lib/dynamoDBClients";
 import * as createError from 'http-errors';
 
 interface IAuction {
@@ -29,9 +29,6 @@ export async function createAuction(event: APIGatewayProxyEvent) {
     createdAt: now.toISOString(),
   };
 
-  const client = new DynamoDBClient({ region: "ap-southeast-2" });
-  const docClient = DynamoDBDocumentClient.from(client);
-
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
     Item: auction,
@@ -51,9 +48,6 @@ export async function createAuction(event: APIGatewayProxyEvent) {
 }
 
 export async function getAuctions(event: APIGatewayProxyEvent) {
-  const client = new DynamoDBClient({ region: 'ap-southeast-2' })
-  const docClient = DynamoDBDocumentClient.from(client)
-
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME
   }
@@ -72,10 +66,6 @@ export async function getAuctions(event: APIGatewayProxyEvent) {
 }
 
 export async function getAuctionsById(event: APIGatewayProxyEvent) {
-
-  const client = new DynamoDBClient( { region: 'ap-southeast-2' })
-  const docClient = DynamoDBDocumentClient.from(client)
-
   const { id } = event.pathParameters
 
   const params = {
