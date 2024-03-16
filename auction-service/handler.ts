@@ -2,15 +2,12 @@ import { v4 as uuid } from 'uuid';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand, ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
-import middy from '@middy/core';
-import jsonBodyParser from '@middy/http-json-body-parser';
-import httpEventNormalizer from "@middy/http-event-normalizer";
-import httpErrorHandler from "@middy/http-error-handler";
+import commonMiddleware from "./lib/commonMiddleware";
 import * as createError from 'http-errors';
 
 export async function createAuction(event: APIGatewayProxyEvent) {
 
-  const body = JSON.parse(event.body);
+  const body = event.body as unknown as { title: string };
   const { title } = body;
   const now = new Date();
 
@@ -103,8 +100,6 @@ export async function getAuctionsById(event: APIGatewayProxyEvent) {
   }
 }
 
-export const handler = middy()
-  .use(jsonBodyParser())
-  .use(httpEventNormalizer())
-  .use(httpErrorHandler())
-  .handler(createAuction);
+export const createAuctionHandler = commonMiddleware(createAuction);
+export const getAuctionsHandler = commonMiddleware(getAuctions);
+export const getAuctionsByIdHandler = commonMiddleware(getAuctionsById);
