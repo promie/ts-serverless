@@ -1,6 +1,10 @@
 import { v4 as uuid } from 'uuid';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import middy from '@middy/core'
+import httpJsonBodyParser from '@middy/http-json-body-parser'
+import httpEventNormalizer from "@middy/http-event-normalizer";
+import httpErrorHandler from "@middy/http-error-handler";
 
 export async function createAuction(event) {
   const body = JSON.parse(event.body);
@@ -25,6 +29,7 @@ export async function createAuction(event) {
   const docClient = DynamoDBDocumentClient.from(client);
 
   const params = {
+    // @ts-ignore
     TableName: process.env.AUCTIONS_TABLE_NAME,
     Item: auction,
   };
@@ -45,3 +50,9 @@ export async function createAuction(event) {
     };
   }
 }
+
+export const handler = middy()
+.use(httpJsonBodyParser())
+.use(httpEventNormalizer())
+.use(httpErrorHandler())
+.handler(createAuction)
