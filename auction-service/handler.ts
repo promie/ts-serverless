@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import middy from '@middy/core';
 import jsonBodyParser from '@middy/http-json-body-parser';
 import httpEventNormalizer from "@middy/http-event-normalizer";
@@ -64,6 +64,39 @@ export async function getAuctions(event: APIGatewayProxyEvent) {
       statusCode: 200,
       body: JSON.stringify(auctions.Items)
     }
+  }catch(err) {
+    console.log('Error', err)
+    throw new createError.InternalServerError(err)
+  }
+}
+
+export async function getAuctionsById(event: APIGatewayProxyEvent) {
+
+  const client = new DynamoDBClient( { region: 'ap-southeast-2' })
+  const docClient = DynamoDBDocumentClient.from(client)
+
+  const { id } = event.pathParameters
+
+  const params = {
+    TableName: process.env.AUCTIONS_TABLE_NAME,
+    Key: { id }
+  }
+
+  try {
+    const result = await docClient.send(new GetCommand(params))
+
+    if(!result.Item) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: `Auction id ${id} not found.`})
+      }
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(result.Item)
+    }
+
   }catch(err) {
     console.log('Error', err)
     throw new createError.InternalServerError(err)
