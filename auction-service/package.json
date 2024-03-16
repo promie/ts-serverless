@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "deploy": "sls deploy",
+    "deploy:verbose": "sls deploy --verbose",
+    "remove": "sls remove"
+  },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.136",
     "@types/http-errors": "^2.0.4",

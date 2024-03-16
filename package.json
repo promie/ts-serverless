@@ -1,0 +1,17 @@
+{
+  "name": "ts-serverless",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "deploy:auction": "cd auction && npm run deploy:verbose",
+    "prettier:check": "prettier --check \"./**/*.{js,ts,jsx,tsx,json,yml}\"",
+    "prettier:write": "prettier --write \"./**/*.{js,ts,jsx,tsx,json,yml}\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^3.2.5"
+  }
+}
