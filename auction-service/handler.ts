@@ -6,21 +6,13 @@ import middy from '@middy/core';
 import jsonBodyParser from '@middy/http-json-body-parser';
 import httpEventNormalizer from "@middy/http-event-normalizer";
 import httpErrorHandler from "@middy/http-error-handler";
-// @ts-ignore
-import createError from 'http-errors';
-
-interface AuctionRequestBody {
-  title: string;
-}
+import * as createError from 'http-errors';
 
 export async function createAuction(event: APIGatewayProxyEvent) {
 
   const body = JSON.parse(event.body);
   const { title } = body;
   const now = new Date();
-
-  console.log('body', body);
-  console.log('title', title);
 
   if (!title) {
     return {
