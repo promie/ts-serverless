@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { PutCommand, ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
-import commonMiddleware from "./lib/commonMiddleware";
+import { writeRequestsMiddleware, readRequestsMiddleware } from "./lib/commonMiddleware";
 import { docClient } from "./lib/dynamoDBClients";
 import * as createError from 'http-errors';
 
@@ -94,6 +94,6 @@ export async function getAuctionsById(event: APIGatewayProxyEvent) {
   }
 }
 
-export const createAuctionHandler = commonMiddleware(createAuction);
-export const getAuctionsHandler = commonMiddleware(getAuctions);
-export const getAuctionsByIdHandler = commonMiddleware(getAuctionsById);
+export const createAuctionHandler = writeRequestsMiddleware(createAuction);
+export const getAuctionsHandler = readRequestsMiddleware(getAuctions);
+export const getAuctionsByIdHandler = readRequestsMiddleware(getAuctionsById);
