@@ -49,6 +49,13 @@ functions:
       - http:
           method: GET
           path: /auctions/{id}
+  placeBid:
+    handler: handler.placeBidHandler
+    events:
+      - http:
+          method: PATCH
+          path: /auctions/{id}/bid
+
 
 plugins:
   - serverless-esbuild
