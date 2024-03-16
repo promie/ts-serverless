@@ -42,6 +42,12 @@ functions:
       - http:
           method: GET
           path: /auctions
+  getAuctionsById:
+    handler: handler.getAuctionsById
+    events:
+      - http:
+          method: GET
+          path: /auctions/{id}
 
 plugins:
   - serverless-esbuild
