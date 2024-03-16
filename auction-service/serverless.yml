@@ -12,6 +12,7 @@ provider:
     - Effect: Allow
       Action:
         - dynamodb:PutItem
+        - dynamodb:Scan
       Resource: ${self:custom.AuctionsTable.arn}
 
 resources:
@@ -35,13 +36,12 @@ functions:
       - http:
           method: POST
           path: /auction
-
-    getAuctions:
-      handler: handler.getAuctions
-      events:
-        - http:
-            method: GET
-            path: /auctions
+  getAuctions:
+    handler: handler.getAuctions
+    events:
+      - http:
+          method: GET
+          path: /auctions
 
 plugins:
   - serverless-esbuild
