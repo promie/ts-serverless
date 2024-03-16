@@ -29,6 +29,9 @@ export async function createAuction(event: APIGatewayProxyEvent) {
     title,
     status: 'OPEN',
     createdAt: now.toISOString(),
+    highestBid: {
+      amount: 0
+    }
   }
 
   const params = {
@@ -95,6 +98,17 @@ export async function getAuctionsById(event: APIGatewayProxyEvent) {
   }
 }
 
+export async function placeBid(event: APIGatewayProxyEvent) {
+  const { id } = event.pathParameters
+  const { amount } = event.body as unknown as { amount: number }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ id, amount }),
+  }
+}
+
 export const createAuctionHandler = writeRequestsMiddleware(createAuction)
+export const placeBidHandler = writeRequestsMiddleware(placeBid)
 export const getAuctionsHandler = readRequestsMiddleware(getAuctions)
 export const getAuctionsByIdHandler = readRequestsMiddleware(getAuctionsById)
