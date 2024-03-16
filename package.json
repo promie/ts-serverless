@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy:auction": "cd auction && npm run deploy:verbose",
+    "deploy:auction": "cd auction-service && npm run deploy:verbose",
     "prettier:check": "prettier --check \"./**/*.{js,ts,jsx,tsx,json,yml}\"",
     "prettier:write": "prettier --write \"./**/*.{js,ts,jsx,tsx,json,yml}\""
   },
