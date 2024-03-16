@@ -1,16 +1,17 @@
 import { v4 as uuid } from 'uuid';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
-import middy from '@middy/core';
-import jsonBodyParser from '@middy/http-json-body-parser';
-import httpEventNormalizer from "@middy/http-event-normalizer";
-import httpErrorHandler from "@middy/http-error-handler";
+import { PutCommand, ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { writeRequestsMiddleware, readRequestsMiddleware } from "./lib/commonMiddleware";
+import { docClient } from "./lib/dynamoDBClients";
 import * as createError from 'http-errors';
+
+interface IAuction {
+  title: string;
+}
 
 export async function createAuction(event: APIGatewayProxyEvent) {
 
-  const body = JSON.parse(event.body);
+  const body = event.body as unknown as IAuction
   const { title } = body;
   const now = new Date();
 
@@ -27,9 +28,6 @@ export async function createAuction(event: APIGatewayProxyEvent) {
     status: 'OPEN',
     createdAt: now.toISOString(),
   };
-
-  const client = new DynamoDBClient({ region: "ap-southeast-2" });
-  const docClient = DynamoDBDocumentClient.from(client);
 
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
@@ -50,9 +48,6 @@ export async function createAuction(event: APIGatewayProxyEvent) {
 }
 
 export async function getAuctions(event: APIGatewayProxyEvent) {
-  const client = new DynamoDBClient({ region: 'ap-southeast-2' })
-  const docClient = DynamoDBDocumentClient.from(client)
-
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME
   }
@@ -71,10 +66,6 @@ export async function getAuctions(event: APIGatewayProxyEvent) {
 }
 
 export async function getAuctionsById(event: APIGatewayProxyEvent) {
-
-  const client = new DynamoDBClient( { region: 'ap-southeast-2' })
-  const docClient = DynamoDBDocumentClient.from(client)
-
   const { id } = event.pathParameters
 
   const params = {
@@ -103,8 +94,6 @@ export async function getAuctionsById(event: APIGatewayProxyEvent) {
   }
 }
 
-export const handler = middy()
-  .use(jsonBodyParser())
-  .use(httpEventNormalizer())
-  .use(httpErrorHandler())
-  .handler(createAuction);
+export const createAuctionHandler = writeRequestsMiddleware(createAuction);
+export const getAuctionsHandler = readRequestsMiddleware(getAuctions);
+export const getAuctionsByIdHandler = readRequestsMiddleware(getAuctionsById);

@@ -32,19 +32,19 @@ resources:
 
 functions:
   createAuction:
-    handler: handler.createAuction
+    handler: handler.createAuctionHandler
     events:
       - http:
           method: POST
           path: /auction
   getAuctions:
-    handler: handler.getAuctions
+    handler: handler.getAuctionsHandler
     events:
       - http:
           method: GET
           path: /auctions
   getAuctionsById:
-    handler: handler.getAuctionsById
+    handler: handler.getAuctionsByIdHandler
     events:
       - http:
           method: GET
