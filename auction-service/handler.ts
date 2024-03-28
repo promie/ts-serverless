@@ -122,8 +122,13 @@ export async function placeBid(event: APIGatewayProxyEvent) {
   const { id } = event.pathParameters
   const { amount } = event.body as unknown as { amount: number }
 
-  // Getting the bid amount from getAuctionsById
-  let auction = await getAuctionsById(event)
+  const auction = await getAuctionsById(event)
+
+  if (amount <= auction.highestBid.amount) {
+    throw new createError.Forbidden(
+      `Your bid must be higher than ${auction.highestBid.amount}`,
+    )
+  }
 
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
