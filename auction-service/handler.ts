@@ -76,8 +76,8 @@ export async function getAuctions(event: APIGatewayProxyEvent) {
   }
 }
 
-export async function getAuctionsById(event: APIGatewayProxyEvent) {
-  const { id } = event.pathParameters
+export async function getAuctionsById(id) {
+  let auction: Record<string, any>
 
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
@@ -94,19 +94,36 @@ export async function getAuctionsById(event: APIGatewayProxyEvent) {
       }
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(result.Item),
-    }
+    auction = result.Item
   } catch (err) {
     console.log('Error', err)
     throw new createError.InternalServerError(err)
+  }
+
+  if (!auction) {
+    throw new createError.NotFound(`Auction with ID "${id}" not found`)
+  }
+
+  return auction
+}
+
+export async function getAuction(event: APIGatewayProxyEvent) {
+  const { id } = event.pathParameters
+
+  const auction = await getAuctionsById(id)
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(auction),
   }
 }
 
 export async function placeBid(event: APIGatewayProxyEvent) {
   const { id } = event.pathParameters
   const { amount } = event.body as unknown as { amount: number }
+
+  // Getting the bid amount from getAuctionsById
+  let auction = await getAuctionsById(event)
 
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
@@ -133,4 +150,4 @@ export async function placeBid(event: APIGatewayProxyEvent) {
 export const createAuctionHandler = writeRequestsMiddleware(createAuction)
 export const placeBidHandler = writeRequestsMiddleware(placeBid)
 export const getAuctionsHandler = readRequestsMiddleware(getAuctions)
-export const getAuctionsByIdHandler = readRequestsMiddleware(getAuctionsById)
+export const getAuctionsByIdHandler = readRequestsMiddleware(getAuction)
