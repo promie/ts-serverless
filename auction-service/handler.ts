@@ -1,6 +1,12 @@
 import { v4 as uuid } from 'uuid'
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { PutCommand, ScanCommand, GetCommand } from '@aws-sdk/lib-dynamodb'
+import { ReturnValue } from '@aws-sdk/client-dynamodb'
+import {
+  PutCommand,
+  ScanCommand,
+  GetCommand,
+  UpdateCommand,
+} from '@aws-sdk/lib-dynamodb'
 import {
   writeRequestsMiddleware,
   readRequestsMiddleware,
@@ -30,8 +36,8 @@ export async function createAuction(event: APIGatewayProxyEvent) {
     status: 'OPEN',
     createdAt: now.toISOString(),
     highestBid: {
-      amount: 0
-    }
+      amount: 0,
+    },
   }
 
   const params = {
@@ -102,9 +108,25 @@ export async function placeBid(event: APIGatewayProxyEvent) {
   const { id } = event.pathParameters
   const { amount } = event.body as unknown as { amount: number }
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ id, amount }),
+  const params = {
+    TableName: process.env.AUCTIONS_TABLE_NAME,
+    Key: { id },
+    UpdateExpression: 'set highestBid.amount = :amount',
+    ExpressionAttributeValues: {
+      ':amount': amount,
+    },
+    ReturnValues: ReturnValue.ALL_NEW,
+  }
+
+  try {
+    const result = await docClient.send(new UpdateCommand(params))
+    return {
+      statusCode: 200,
+      body: JSON.stringify(result.Attributes),
+    }
+  } catch (err) {
+    console.log('Error', err)
+    throw new createError.InternalServerError(err)
   }
 }
 
