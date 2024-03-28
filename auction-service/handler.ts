@@ -120,11 +120,12 @@ export async function getAuction(event: APIGatewayProxyEvent) {
 
 export async function placeBid(event: APIGatewayProxyEvent) {
   const { id } = event.pathParameters
+
   const { amount } = event.body as unknown as { amount: number }
 
-  const auction = await getAuctionsById(event)
+  const auction = await getAuctionsById(id)
 
-  if (amount <= auction.highestBid.amount) {
+  if (amount <= auction?.highestBid?.amount) {
     throw new createError.Forbidden(
       `Your bid must be higher than ${auction.highestBid.amount}`,
     )
