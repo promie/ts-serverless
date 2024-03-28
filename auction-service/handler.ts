@@ -1,6 +1,12 @@
 import { v4 as uuid } from 'uuid'
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { PutCommand, ScanCommand, GetCommand } from '@aws-sdk/lib-dynamodb'
+import { ReturnValue } from '@aws-sdk/client-dynamodb'
+import {
+  PutCommand,
+  ScanCommand,
+  GetCommand,
+  UpdateCommand,
+} from '@aws-sdk/lib-dynamodb'
 import {
   writeRequestsMiddleware,
   readRequestsMiddleware,
@@ -29,6 +35,9 @@ export async function createAuction(event: APIGatewayProxyEvent) {
     title,
     status: 'OPEN',
     createdAt: now.toISOString(),
+    highestBid: {
+      amount: 0,
+    },
   }
 
   const params = {
@@ -67,8 +76,8 @@ export async function getAuctions(event: APIGatewayProxyEvent) {
   }
 }
 
-export async function getAuctionsById(event: APIGatewayProxyEvent) {
-  const { id } = event.pathParameters
+export async function getAuctionsById(id) {
+  let auction: Record<string, any>
 
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
@@ -85,9 +94,58 @@ export async function getAuctionsById(event: APIGatewayProxyEvent) {
       }
     }
 
+    auction = result.Item
+  } catch (err) {
+    console.log('Error', err)
+    throw new createError.InternalServerError(err)
+  }
+
+  if (!auction) {
+    throw new createError.NotFound(`Auction with ID "${id}" not found`)
+  }
+
+  return auction
+}
+
+export async function getAuction(event: APIGatewayProxyEvent) {
+  const { id } = event.pathParameters
+
+  const auction = await getAuctionsById(id)
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(auction),
+  }
+}
+
+export async function placeBid(event: APIGatewayProxyEvent) {
+  const { id } = event.pathParameters
+
+  const { amount } = event.body as unknown as { amount: number }
+
+  const auction = await getAuctionsById(id)
+
+  if (amount <= auction?.highestBid?.amount) {
+    throw new createError.Forbidden(
+      `Your bid must be higher than ${auction.highestBid.amount}`,
+    )
+  }
+
+  const params = {
+    TableName: process.env.AUCTIONS_TABLE_NAME,
+    Key: { id },
+    UpdateExpression: 'set highestBid.amount = :amount',
+    ExpressionAttributeValues: {
+      ':amount': amount,
+    },
+    ReturnValues: ReturnValue.ALL_NEW,
+  }
+
+  try {
+    const result = await docClient.send(new UpdateCommand(params))
     return {
       statusCode: 200,
-      body: JSON.stringify(result.Item),
+      body: JSON.stringify(result.Attributes),
     }
   } catch (err) {
     console.log('Error', err)
@@ -96,5 +154,6 @@ export async function getAuctionsById(event: APIGatewayProxyEvent) {
 }
 
 export const createAuctionHandler = writeRequestsMiddleware(createAuction)
+export const placeBidHandler = writeRequestsMiddleware(placeBid)
 export const getAuctionsHandler = readRequestsMiddleware(getAuctions)
-export const getAuctionsByIdHandler = readRequestsMiddleware(getAuctionsById)
+export const getAuctionsByIdHandler = readRequestsMiddleware(getAuction)
