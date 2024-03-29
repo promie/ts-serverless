@@ -74,8 +74,8 @@ functions:
           path: /auctions/{id}/bid
   processAuctions:
     handler: handler.processAuctionsHandler
-#    events:
-#      - schedule: rate(1 minute)
+    events:
+      - schedule: rate(1 minute)
 
 
 plugins:

@@ -38,6 +38,7 @@ const getEndedAuctions = async () => {
 
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
+    IndexName: 'statusAndEndDate',
     KeyConditionExpression: '#status = :status AND endingAt <= :now',
     ExpressionAttributeValues: {
       ':status': 'OPEN',
@@ -66,9 +67,7 @@ const closeAuction = async (auction: Record<string, any>) => {
     },
   }
 
-  const result = await docClient.send(new UpdateCommand(params))
-
-  return result
+  return await docClient.send(new UpdateCommand(params))
 }
 
 export { getAuctionsById, getEndedAuctions, closeAuction }

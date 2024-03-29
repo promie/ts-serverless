@@ -100,6 +100,10 @@ export async function placeBid(event: APIGatewayProxyEvent) {
     )
   }
 
+  if (auction.status !== 'OPEN') {
+    throw new createError.Forbidden('You cannot bid on closed auctions!')
+  }
+
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
     Key: { id },
