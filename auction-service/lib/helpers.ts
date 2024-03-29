@@ -1,8 +1,8 @@
-import { GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb'
+import { GetCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import { docClient } from './dynamoDBClients'
 import * as createError from 'http-errors'
 
-const getAuctionsById = (id: string) => {
+const getAuctionsById = async (id: string) => {
   let auction: Record<string, any>
 
   const params = {
@@ -53,4 +53,22 @@ const getEndedAuctions = async () => {
   return result.Items
 }
 
-export { getAuctionsById, getEndedAuctions }
+const closeAuction = async (auction: Record<string, any>) => {
+  const params = {
+    TableName: process.env.AUCTIONS_TABLE_NAME,
+    Key: { id: auction.id },
+    UpdateExpression: 'set #status = :status',
+    ExpressionAttributeValues: {
+      ':status': 'CLOSED',
+    },
+    ExpressionAttributeNames: {
+      '#status': 'status',
+    },
+  }
+
+  const result = await docClient.send(new UpdateCommand(params))
+
+  return result
+}
+
+export { getAuctionsById, getEndedAuctions, closeAuction }
