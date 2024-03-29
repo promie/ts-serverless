@@ -1,19 +1,14 @@
 import { v4 as uuid } from 'uuid'
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import { ReturnValue } from '@aws-sdk/client-dynamodb'
-import {
-  PutCommand,
-  ScanCommand,
-  GetCommand,
-  UpdateCommand,
-} from '@aws-sdk/lib-dynamodb'
+import { PutCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import {
   writeRequestsMiddleware,
   readRequestsMiddleware,
 } from './lib/commonMiddleware'
 import { docClient } from './lib/dynamoDBClients'
 import * as createError from 'http-errors'
-import { getAuctionsById } from './lib/helpers'
+import { getAuctionsById, getEndedAuctions, closeAuction } from './lib/helpers'
 
 interface IAuction {
   title: string
@@ -128,7 +123,21 @@ export async function placeBid(event: APIGatewayProxyEvent) {
 }
 
 export async function processAuctionsHandler(event: APIGatewayProxyEvent) {
-  console.log('event', event)
+  try {
+    const auctionsToClose = await getEndedAuctions()
+
+    const closePromises = auctionsToClose.map(auction => closeAuction(auction))
+
+    await Promise.all(closePromises)
+
+    // Since this function isn't invoked by an HTTP request (API Gateway), we don't need to return an HTTP response.
+    return {
+      closed: closePromises.length,
+    }
+  } catch (err) {
+    console.log('Error', err)
+    throw new createError.InternalServerError(err)
+  }
 }
 
 export const createAuctionHandler = writeRequestsMiddleware(createAuction)
