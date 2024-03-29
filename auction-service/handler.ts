@@ -153,6 +153,10 @@ export async function placeBid(event: APIGatewayProxyEvent) {
   }
 }
 
+export async function processAuctionsHandler(event: APIGatewayProxyEvent) {
+  console.log('event', event)
+}
+
 export const createAuctionHandler = writeRequestsMiddleware(createAuction)
 export const placeBidHandler = writeRequestsMiddleware(placeBid)
 export const getAuctionsHandler = readRequestsMiddleware(getAuctions)
