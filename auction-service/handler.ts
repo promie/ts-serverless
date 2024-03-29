@@ -13,6 +13,7 @@ import {
 } from './lib/commonMiddleware'
 import { docClient } from './lib/dynamoDBClients'
 import * as createError from 'http-errors'
+import { getAuctionsById } from './lib/helpers'
 
 interface IAuction {
   title: string
@@ -78,37 +79,6 @@ export async function getAuctions(event: APIGatewayProxyEvent) {
     console.log('Error', err)
     throw new createError.InternalServerError(err)
   }
-}
-
-export async function getAuctionsById(id) {
-  let auction: Record<string, any>
-
-  const params = {
-    TableName: process.env.AUCTIONS_TABLE_NAME,
-    Key: { id },
-  }
-
-  try {
-    const result = await docClient.send(new GetCommand(params))
-
-    if (!result.Item) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: `Auction id ${id} not found.` }),
-      }
-    }
-
-    auction = result.Item
-  } catch (err) {
-    console.log('Error', err)
-    throw new createError.InternalServerError(err)
-  }
-
-  if (!auction) {
-    throw new createError.NotFound(`Auction with ID "${id}" not found`)
-  }
-
-  return auction
 }
 
 export async function getAuction(event: APIGatewayProxyEvent) {
