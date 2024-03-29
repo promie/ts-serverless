@@ -22,6 +22,9 @@ export async function createAuction(event: APIGatewayProxyEvent) {
   const body = event.body as unknown as IAuction
   const { title } = body
   const now = new Date()
+  const endDate = new Date()
+
+  endDate.setHours(now.getHours() + 1)
 
   if (!title) {
     return {
@@ -34,10 +37,11 @@ export async function createAuction(event: APIGatewayProxyEvent) {
     id: uuid(),
     title,
     status: 'OPEN',
-    createdAt: now.toISOString(),
+    endingAt: endDate.toISOString(),
     highestBid: {
       amount: 0,
     },
+    createdAt: now.toISOString(),
   }
 
   const params = {
