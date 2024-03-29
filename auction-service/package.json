@@ -2,7 +2,11 @@
   "scripts": {
     "deploy": "sls deploy",
     "deploy:verbose": "sls deploy --verbose",
-    "remove": "sls remove"
+    "remove": "sls remove",
+    "logs:processAuctions": "sls logs -f processAuctions",
+    "logs:processAuctions:tail": "sls logs -f processAuctions -t",
+    "invoke:processAuctions": "sls invoke -f processAuctions",
+    "invoke:processAuctions:logs": "sls invoke -f processAuctions -l"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.136",

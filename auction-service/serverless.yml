@@ -15,7 +15,10 @@ provider:
         - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:UpdateItem
-      Resource: ${self:custom.AuctionsTable.arn}
+        - dynamodb:Query
+      Resource:
+        - ${self:custom.AuctionsTable.arn}
+        - !Join ['/', ['${self:custom.AuctionsTable.arn}', 'index', 'statusAndEndDate']]
 
 resources:
   Resources:
@@ -27,9 +30,22 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
+          - AttributeName: status
+            AttributeType: S
+          - AttributeName: endingAt
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: statusAndEndDate
+            KeySchema:
+              - AttributeName: status
+                KeyType: HASH
+              - AttributeName: endingAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
 functions:
   createAuction:
@@ -56,6 +72,10 @@ functions:
       - http:
           method: PATCH
           path: /auctions/{id}/bid
+  processAuctions:
+    handler: handler.processAuctionsHandler
+    events:
+      - schedule: rate(1 minute)
 
 
 plugins:
