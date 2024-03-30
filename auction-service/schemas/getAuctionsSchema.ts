@@ -6,7 +6,8 @@ const schema = {
       properties: {
         status: {
           type: 'string',
-          enum: ['open', 'closed'],
+          enum: ['OPEN', 'CLOSED'],
+          default: 'OPEN',
         },
       },
     },
