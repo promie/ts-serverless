@@ -9,6 +9,7 @@ import {
 import { docClient } from './lib/dynamoDBClients'
 import * as createError from 'http-errors'
 import { getAuctionsById, getEndedAuctions, closeAuction } from './lib/helpers'
+import getAuctionsSchema from './schemas/getAuctionsSchema'
 
 interface IAuction {
   title: string
@@ -162,5 +163,8 @@ export async function processAuctionsHandler(event: APIGatewayProxyEvent) {
 
 export const createAuctionHandler = writeRequestsMiddleware(createAuction)
 export const placeBidHandler = writeRequestsMiddleware(placeBid)
-export const getAuctionsHandler = readRequestsMiddleware(getAuctions)
+export const getAuctionsHandler = readRequestsMiddleware(
+  getAuctions,
+  getAuctionsSchema,
+)
 export const getAuctionsByIdHandler = readRequestsMiddleware(getAuction)

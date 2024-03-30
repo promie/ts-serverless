@@ -2,6 +2,8 @@ import middy from '@middy/core'
 import jsonBodyParser from '@middy/http-json-body-parser'
 import httpEventNormalizer from '@middy/http-event-normalizer'
 import httpErrorHandler from '@middy/http-error-handler'
+import validator from '@middy/validator'
+import { transpileSchema } from '@middy/validator/transpile'
 
 /**
  * Middleware for POST, PUT, PATCH requests
@@ -17,11 +19,20 @@ const writeRequestsMiddleware = handler =>
   ])
 
 /**
- * Middleware for GET requests
- * - Excludes `jsonBodyParser` as GET requests do not typically contain a body.
- * - `httpEventNormalizer` and `httpErrorHandler` are still useful for handling query parameters and errors respectively.
+ * Enhanced Middleware for GET requests
+ * - Optionally includes validator middleware if a validation schema is provided.
  */
-const readRequestsMiddleware = handler =>
-  middy(handler).use([httpEventNormalizer(), httpErrorHandler()])
+const readRequestsMiddleware = (handler, schema = null) => {
+  const middleware = middy(handler).use([
+    httpEventNormalizer(),
+    httpErrorHandler(),
+  ])
+
+  if (schema) {
+    middleware.use(validator({ eventSchema: transpileSchema(schema) }))
+  }
+
+  return middleware
+}
 
 export { writeRequestsMiddleware, readRequestsMiddleware }
