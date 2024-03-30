@@ -11,6 +11,7 @@ import * as createError from 'http-errors'
 import { getAuctionsById, getEndedAuctions, closeAuction } from './lib/helpers'
 import getAuctionsSchema from './schemas/getAuctionsSchema'
 import createAuctionSchema from './schemas/createAuctionSchema'
+import placeBidSchema from './schemas/placeBidSchema'
 
 interface IAuction {
   title: string
@@ -166,7 +167,7 @@ export const createAuctionHandler = writeRequestsMiddleware(
   createAuction,
   createAuctionSchema,
 )
-export const placeBidHandler = writeRequestsMiddleware(placeBid)
+export const placeBidHandler = writeRequestsMiddleware(placeBid, placeBidSchema)
 export const getAuctionsHandler = readRequestsMiddleware(
   getAuctions,
   getAuctionsSchema,
