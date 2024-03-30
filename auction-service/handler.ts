@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid'
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import { ReturnValue } from '@aws-sdk/client-dynamodb'
-import { PutCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
+import { PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import {
   writeRequestsMiddleware,
   readRequestsMiddleware,
@@ -59,12 +59,28 @@ export async function createAuction(event: APIGatewayProxyEvent) {
 }
 
 export async function getAuctions(event: APIGatewayProxyEvent) {
+  const { status } = event.queryStringParameters
+
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
+    IndexName: 'statusAndEndDate',
+    KeyConditionExpression: '#status = :status',
+    ExpressionAttributeValues: {
+      ':status': status,
+    },
+    ExpressionAttributeNames: {
+      '#status': 'status',
+    },
   }
 
   try {
-    const auctions = await docClient.send(new ScanCommand(params))
+    const auctions = await docClient.send(new QueryCommand(params))
+
+    if (!auctions.Items) {
+      throw new createError.NotFound(
+        `No auctions found with status "${status}"`,
+      )
+    }
 
     return {
       statusCode: 200,
