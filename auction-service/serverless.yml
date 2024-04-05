@@ -89,4 +89,4 @@ custom:
   AuctionsTable:
     name: !Ref AuctionsTable
     arn: !GetAtt AuctionsTable.Arn
-  authorizerArn: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:auth-service-${self.provider.stage}-auth
+  authorizerArn: arn:aws:lambda:${self:provider.region}:${aws:accountId}:function:auth-service-${self:provider.stage}-auth
