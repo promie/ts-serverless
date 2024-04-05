@@ -112,6 +112,7 @@ export async function placeBid(event: APIGatewayProxyEvent) {
   const { id } = event.pathParameters
 
   const { amount } = event.body as unknown as { amount: number }
+  const { email } = event.requestContext.authorizer
 
   const auction = await getAuctionsById(id)
 
@@ -128,9 +129,11 @@ export async function placeBid(event: APIGatewayProxyEvent) {
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
     Key: { id },
-    UpdateExpression: 'set highestBid.amount = :amount',
+    UpdateExpression:
+      'set highestBid.amount = :amount, highestBid.bidder = :bidder',
     ExpressionAttributeValues: {
       ':amount': amount,
+      ':bidder': email,
     },
     ReturnValues: ReturnValue.ALL_NEW,
   }
