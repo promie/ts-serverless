@@ -8,13 +8,6 @@ provider:
   environment:
     AUTH0_PUBLIC_KEY: ${file(secret.pem)}
 
-functions:
-  hello:
-    handler: handler.hello
-
-plugins:
-  - serverless-esbuild
-
 resources:
   Resources:
     # This response is needed for custom authorizer failures cors support ¯\_(ツ)_/¯
@@ -38,6 +31,30 @@ resources:
         RestApiId:
           Ref: 'ApiGatewayRestApi'
         StatusCode: '401'
+
+functions:
+  auth:
+    handler: handler.auth
+    cors: true
+  publicEndpoint:
+    handler: handler.public
+    events:
+      - http:
+          path: public
+          method: POST
+          cors: true
+  privateEndpoint:
+    handler: handler.private
+    events:
+      - http:
+          path: private
+          method: POST
+          authorizer: auth
+          cors: true
+
+plugins:
+  - serverless-esbuild
+
 custom:
   bundle:
     linting: false
