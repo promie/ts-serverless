@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "deploy": "sls deploy",
+    "deploy:verbose": "sls deploy --verbose",
+    "remove": "sls remove"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.137",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.12.4",
+    "esbuild": "^0.14.25",
+    "serverless-esbuild": "^1.25.0"
+  },
+  "name": "auth-service",
+  "dependencies": {
+    "aws-lambda": "^1.0.7",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

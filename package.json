@@ -6,6 +6,8 @@
   "scripts": {
     "deploy:auction": "cd auction-service && npm run deploy:verbose",
     "remove:auction": "cd auction-service && npm run remove:verbose",
+    "deploy:auth": "cd auth-service && npm run deploy:verbose",
+    "remove:auth": "cd auth-service && npm run remove:verbose",
     "prettier:check": "prettier --check \"./**/*.{js,ts,jsx,tsx,json,yml}\"",
     "prettier:write": "prettier --write \"./**/*.{js,ts,jsx,tsx,json,yml}\""
   },

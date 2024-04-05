@@ -1,0 +1,8 @@
+# package directories
+node_modules
+.esbuild
+
+# Serverless directories
+.serverless
+
+secret.pem
