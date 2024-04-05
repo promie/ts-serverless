@@ -20,6 +20,7 @@ interface IAuction {
 export async function createAuction(event: APIGatewayProxyEvent) {
   const body = event.body as unknown as IAuction
   const { title } = body
+  const { email } = event.requestContext.authorizer
   const now = new Date()
   const endDate = new Date()
 
@@ -40,6 +41,7 @@ export async function createAuction(event: APIGatewayProxyEvent) {
     highestBid: {
       amount: 0,
     },
+    seller: email,
     createdAt: now.toISOString(),
   }
 
