@@ -4,6 +4,9 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs18.x
+  region: ap-southeast-2
+  environment:
+    AUTH0_PUBLIC_KEY: ${file(secret.pem)}
 
 functions:
   hello:

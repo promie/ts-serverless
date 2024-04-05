@@ -131,3 +131,5 @@ dist
 
 .idea/
 .DS_Store
+
+./auth-service/secret.pem
