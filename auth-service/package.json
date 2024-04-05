@@ -5,8 +5,12 @@
     "remove": "sls remove"
   },
   "devDependencies": {
+    "@types/node": "^20.12.4",
     "esbuild": "^0.14.25",
     "serverless-esbuild": "^1.25.0"
   },
-  "name": "auth-service"
+  "name": "auth-service",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  }
 }
