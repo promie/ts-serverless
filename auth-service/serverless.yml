@@ -37,14 +37,14 @@ functions:
     handler: handler.auth
     cors: true
   publicEndpoint:
-    handler: handler.public
+    handler: handler.publicEndpoint
     events:
       - http:
           path: public
           method: POST
           cors: true
   privateEndpoint:
-    handler: handler.private
+    handler: handler.privateEndpoint
     events:
       - http:
           path: private
