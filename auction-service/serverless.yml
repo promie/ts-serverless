@@ -54,24 +54,28 @@ functions:
       - http:
           method: POST
           path: /auction
+          authorizer: ${self:custom.authorizerArn}
   getAuctions:
     handler: handler.getAuctionsHandler
     events:
       - http:
           method: GET
           path: /auctions
+          authorizer: ${self:custom.authorizerArn}
   getAuctionsById:
     handler: handler.getAuctionsByIdHandler
     events:
       - http:
           method: GET
           path: /auctions/{id}
+          authorizer: ${self:custom.authorizerArn}
   placeBid:
     handler: handler.placeBidHandler
     events:
       - http:
           method: PATCH
           path: /auctions/{id}/bid
+          authorizer: ${self:custom.authorizerArn}
   processAuctions:
     handler: handler.processAuctionsHandler
     events:
@@ -85,3 +89,4 @@ custom:
   AuctionsTable:
     name: !Ref AuctionsTable
     arn: !GetAtt AuctionsTable.Arn
+  authorizerArn: arn:aws:lambda:${self:provider.region}:${aws:accountId}:function:auth-service-${self:provider.stage}-auth
