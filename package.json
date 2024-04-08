@@ -8,6 +8,8 @@
     "remove:auction": "cd auction-service && npm run remove:verbose",
     "deploy:auth": "cd auth-service && npm run deploy:verbose",
     "remove:auth": "cd auth-service && npm run remove:verbose",
+    "deploy:notifications": "cd notifications-service && npm run deploy:verbose",
+    "remove:notifications": "cd notifications-service && npm run remove:verbose",
     "prettier:check": "prettier --check \"./**/*.{js,ts,jsx,tsx,json,yml}\"",
     "prettier:write": "prettier --write \"./**/*.{js,ts,jsx,tsx,json,yml}\""
   },

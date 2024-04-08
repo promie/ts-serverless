@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "deploy": "sls deploy",
+    "deploy:verbose": "sls deploy --verbose",
+    "remove": "sls remove"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.25",
+    "serverless-esbuild": "^1.25.0"
+  },
+  "name": "notification-service"
+}
