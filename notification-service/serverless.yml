@@ -4,10 +4,17 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ap-southeast-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ses:SendEmail
+      Resource: arn:aws:ses:*
 
 functions:
-  hello:
-    handler: handler.hello
+  sendMail:
+    handler: handler.sendMail
 
 plugins:
   - serverless-esbuild
