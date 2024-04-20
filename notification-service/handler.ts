@@ -4,9 +4,6 @@ const client = new SESClient({ region: "ap-southeast-2" });
 
 export async function sendMail(event) {
   const record = event.Records[0];
-
-  console.log("record processing", record);
-
   const email = JSON.parse(record.body);
   const { subject, body, recipient } = email;
 

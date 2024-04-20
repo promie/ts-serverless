@@ -17,7 +17,20 @@ resources:
     MailQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: ${self:custom.mailQueue.name}
+        QueueName: ${self:custom.MailQueue.name}
+  Outputs:
+    MailQueueArn:
+      Value:
+        Fn::GetAtt:
+          - MailQueue
+          - Arn
+      Export:
+        Name: MailQueueArn
+    MailQueueUrl:
+      Value:
+        Ref: MailQueue
+      Export:
+        Name: MailQueueUrl
 
 functions:
   sendMail:
@@ -34,5 +47,6 @@ plugins:
   - serverless-esbuild
 
 custom:
-  mailQueue:
+  MailQueue:
     name: MailQueue-${self:provider.stage}
+    url: !Ref MailQueue
