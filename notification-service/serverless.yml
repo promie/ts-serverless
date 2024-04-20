@@ -4,10 +4,49 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ap-southeast-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ses:SendEmail
+      Resource: "arn:aws:ses:*"
+
+resources:
+  Resources:
+    MailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.MailQueue.name}
+  Outputs:
+    MailQueueArn:
+      Value:
+        Fn::GetAtt:
+          - MailQueue
+          - Arn
+      Export:
+        Name: MailQueueArn
+    MailQueueUrl:
+      Value:
+        Ref: MailQueue
+      Export:
+        Name: MailQueueUrl
 
 functions:
-  hello:
-    handler: handler.hello
+  sendMail:
+    handler: handler.sendMail
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - MailQueue
+              - Arn
+          batchSize: 1
 
 plugins:
   - serverless-esbuild
+
+custom:
+  MailQueue:
+    name: MailQueue-${self:provider.stage}
+    url: !Ref MailQueue
