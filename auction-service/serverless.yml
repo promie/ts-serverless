@@ -18,7 +18,10 @@ provider:
         - dynamodb:Query
       Resource:
         - ${self:custom.AuctionsTable.arn}
-        - !Join ['/', ['${self:custom.AuctionsTable.arn}', 'index', 'statusAndEndDate']]
+        - !Join [
+            '/',
+            ['${self:custom.AuctionsTable.arn}', 'index', 'statusAndEndDate'],
+          ]
 
 resources:
   Resources:
@@ -80,7 +83,6 @@ functions:
     handler: handler.processAuctionsHandler
     events:
       - schedule: rate(1 minute)
-
 
 plugins:
   - serverless-esbuild

@@ -10,7 +10,7 @@ provider:
     - Effect: Allow
       Action:
         - ses:SendEmail
-      Resource: "arn:aws:ses:*"
+      Resource: 'arn:aws:ses:*'
 
 resources:
   Resources:

@@ -1,45 +1,45 @@
-import * as jwt from "jsonwebtoken";
-import { APIGatewayProxyEvent } from "aws-lambda";
+import * as jwt from 'jsonwebtoken'
+import { APIGatewayProxyEvent } from 'aws-lambda'
 
 // By default, API Gateway authorizations are cached (TTL) for 300 seconds.
 // This policy will authorize all requests to the same API Gateway instance where the
 // request is coming from, thus being efficient and optimising costs.
 const generatePolicy = (principalId: any, methodArn: string) => {
-  const apiGatewayWildcard = methodArn.split("/", 2).join("/") + "/*";
+  const apiGatewayWildcard = methodArn.split('/', 2).join('/') + '/*'
 
   return {
     principalId,
     policyDocument: {
-      Version: "2012-10-17",
+      Version: '2012-10-17',
       Statement: [
         {
-          Action: "execute-api:Invoke",
-          Effect: "Allow",
+          Action: 'execute-api:Invoke',
+          Effect: 'Allow',
           Resource: apiGatewayWildcard,
         },
       ],
     },
-  };
-};
+  }
+}
 
 export async function auth(event) {
   if (!event.authorizationToken) {
-    throw "Unauthorized";
+    throw 'Unauthorized'
   }
 
-  const token = event.authorizationToken.replace("Bearer ", "");
+  const token = event.authorizationToken.replace('Bearer ', '')
 
   try {
-    const claims = jwt.verify(token, process.env.AUTH0_PUBLIC_KEY);
-    const policy = generatePolicy(claims.sub, event.methodArn);
+    const claims = jwt.verify(token, process.env.AUTH0_PUBLIC_KEY)
+    const policy = generatePolicy(claims.sub, event.methodArn)
 
     return {
       ...policy,
       context: claims,
-    };
+    }
   } catch (error) {
-    console.log(error);
-    throw "Unauthorized";
+    console.log(error)
+    throw 'Unauthorized'
   }
 }
 
@@ -51,15 +51,15 @@ export async function privateEndpoint(
     statusCode: 200,
     headers: {
       /* Required for CORS support to work */
-      "Access-Control-Allow-Origin": "*",
+      'Access-Control-Allow-Origin': '*',
       /* Required for cookies, authorization headers with HTTPS */
-      "Access-Control-Allow-Credentials": true,
+      'Access-Control-Allow-Credentials': true,
     },
     body: JSON.stringify({
       event,
       context,
     }),
-  };
+  }
 }
 
 export async function publicEndpoint(event: APIGatewayProxyEvent) {
@@ -67,12 +67,12 @@ export async function publicEndpoint(event: APIGatewayProxyEvent) {
     statusCode: 200,
     headers: {
       /* Required for CORS support to work */
-      "Access-Control-Allow-Origin": "*",
+      'Access-Control-Allow-Origin': '*',
       /* Required for cookies, authorization headers with HTTPS */
-      "Access-Control-Allow-Credentials": true,
+      'Access-Control-Allow-Credentials': true,
     },
     body: JSON.stringify({
-      message: "Hi ⊂◉‿◉つ from Public API",
+      message: 'Hi ⊂◉‿◉つ from Public API',
     }),
-  };
+  }
 }
