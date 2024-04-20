@@ -8,6 +8,7 @@ provider:
   region: ap-southeast-2
   environment:
     AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
+    MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -22,6 +23,10 @@ provider:
             '/',
             ['${self:custom.AuctionsTable.arn}', 'index', 'statusAndEndDate'],
           ]
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+      Resource: ${self:custom.MailQueue.arn}
 
 resources:
   Resources:
@@ -92,3 +97,6 @@ custom:
     name: !Ref AuctionsTable
     arn: !GetAtt AuctionsTable.Arn
   authorizerArn: arn:aws:lambda:${self:provider.region}:${aws:accountId}:function:auth-service-${self:provider.stage}-auth
+  MailQueue:
+    arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
+    url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
