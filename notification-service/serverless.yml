@@ -21,11 +21,17 @@ resource:
 functions:
   sendMail:
     handler: handler.sendMail
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - MailQueue
+              - Arn
+          batchSize: 1
 
 plugins:
   - serverless-esbuild
 
 custom:
     mailQueue:
-        name: mailQueue-${self:provider.stage}
-        arn: !GetAtt mailQueue.Arn
+        name: MailQueue-${self:provider.stage}
