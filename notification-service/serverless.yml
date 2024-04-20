@@ -12,9 +12,20 @@ provider:
         - ses:SendEmail
       Resource: arn:aws:ses:*
 
+resource:
+  Resource:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:custom.mailQueue.name}
+
 functions:
   sendMail:
     handler: handler.sendMail
 
 plugins:
   - serverless-esbuild
+
+custom:
+    mailQueue:
+        name: mailQueue-${self:provider.stage}
+        arn: !GetAtt mailQueue.Arn
