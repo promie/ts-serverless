@@ -3,19 +3,26 @@ import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 const client = new SESClient({ region: "ap-southeast-2" });
 
 export async function sendMail(event) {
+  const record = event.Records[0];
+
+  console.log("record processing", record);
+
+  const email = JSON.parse(record.body);
+  const { subject, body, recipient } = email;
+
   const params = {
     Source: "promie.yutasane@gmail.com",
     Destination: {
-      ToAddresses: ["promie.yutasane@gmail.com"],
+      ToAddresses: [recipient],
     },
     Message: {
       Body: {
         Text: {
-          Data: "Hello from Serverless",
+          Data: body,
         },
       },
       Subject: {
-        Data: "Test email from Serverless",
+        Data: subject,
       },
     },
   };
