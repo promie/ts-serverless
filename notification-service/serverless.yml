@@ -10,13 +10,14 @@ provider:
     - Effect: Allow
       Action:
         - ses:SendEmail
-      Resource: arn:aws:ses:*
+      Resource: "arn:aws:ses:*"
 
-resource:
-  Resource:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: ${self:custom.mailQueue.name}
+resources:
+  Resources:
+    MailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.mailQueue.name}
 
 functions:
   sendMail:
@@ -33,5 +34,5 @@ plugins:
   - serverless-esbuild
 
 custom:
-    mailQueue:
-        name: MailQueue-${self:provider.stage}
+  mailQueue:
+    name: MailQueue-${self:provider.stage}
