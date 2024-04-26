@@ -1,6 +1,9 @@
 import { GetCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import { docClient } from './dynamoDBClients'
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs'
 import * as createError from 'http-errors'
+
+const sqs = new SQSClient({ region: 'ap-southeast-2' })
 
 const getAuctionsById = async (id: string) => {
   let auction: Record<string, any>
@@ -67,7 +70,49 @@ const closeAuction = async (auction: Record<string, any>) => {
     },
   }
 
-  return await docClient.send(new UpdateCommand(params))
+  await docClient.send(new UpdateCommand(params))
+
+  const { title, seller, highestBid } = auction
+  const { amount, bidder } = highestBid
+
+  // If there are no bids, notify the seller
+  if (amount === 0) {
+    return await sqs.send(
+      new SendMessageCommand({
+        QueueUrl: process.env.MAIL_QUEUE_URL,
+        MessageBody: JSON.stringify({
+          subject: 'No bids on your auction item :(',
+          recipient: seller,
+          body: `Oh no! Your item "${title}" didn't get any bids. Better luck next time!`,
+        }),
+      }),
+    )
+  }
+
+  // Notify the seller and the bidder if the item was sold
+  const notifySeller = sqs.send(
+    new SendMessageCommand({
+      QueueUrl: process.env.MAIL_QUEUE_URL,
+      MessageBody: JSON.stringify({
+        subject: 'Your item has been sold!',
+        recipient: seller,
+        body: `Woohoo! Your item "${title}" has been sold for $${amount}.`,
+      }),
+    }),
+  )
+
+  const notifyBidder = sqs.send(
+    new SendMessageCommand({
+      QueueUrl: process.env.MAIL_QUEUE_URL,
+      MessageBody: JSON.stringify({
+        subject: 'You won an auction!',
+        recipient: bidder,
+        body: `What a great deal! You got yourself a "${title}"`,
+      }),
+    }),
+  )
+
+  return Promise.all([notifySeller, notifyBidder])
 }
 
 export { getAuctionsById, getEndedAuctions, closeAuction }
