@@ -5,10 +5,16 @@ import { PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import {
   writeRequestsMiddleware,
   readRequestsMiddleware,
+  imageUploadMiddleware,
 } from './lib/commonMiddleware'
 import { docClient } from './lib/dynamoDBClients'
 import * as createError from 'http-errors'
-import { getAuctionsById, getEndedAuctions, closeAuction } from './lib/helpers'
+import {
+  getAuctionsById,
+  getEndedAuctions,
+  closeAuction,
+  uploadPictureToS3,
+} from './lib/helpers'
 import getAuctionsSchema from './schemas/getAuctionsSchema'
 import createAuctionSchema from './schemas/createAuctionSchema'
 import placeBidSchema from './schemas/placeBidSchema'
@@ -162,6 +168,37 @@ export async function placeBid(event: APIGatewayProxyEvent) {
   }
 }
 
+export async function uploadAuctionPicture(event: APIGatewayProxyEvent) {
+  const { id } = event.pathParameters
+  const auction = await getAuctionsById(id)
+  const base64 = event.body.replace(/^data:image\/\w+;base64,/, '')
+  const buffer = Buffer.from(base64, 'base64')
+
+  try {
+    const pictureUrl = await uploadPictureToS3(`${auction.id}.jpg`, buffer)
+
+    const params = {
+      TableName: process.env.AUCTIONS_TABLE_NAME,
+      Key: { id },
+      UpdateExpression: 'set pictureUrl = :pictureUrl',
+      ExpressionAttributeValues: {
+        ':pictureUrl': pictureUrl,
+      },
+      ReturnValues: ReturnValue.ALL_NEW,
+    }
+
+    const result = await docClient.send(new UpdateCommand(params))
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(result.Attributes),
+    }
+  } catch (error) {
+    console.error(error)
+    throw new createError.InternalServerError(error)
+  }
+}
+
 export async function processAuctionsHandler(event: APIGatewayProxyEvent) {
   try {
     const auctionsToClose = await getEndedAuctions()
@@ -190,3 +227,6 @@ export const getAuctionsHandler = readRequestsMiddleware(
   getAuctionsSchema,
 )
 export const getAuctionsByIdHandler = readRequestsMiddleware(getAuction)
+
+export const uploadAuctionPictureHandler =
+  imageUploadMiddleware(uploadAuctionPicture)
