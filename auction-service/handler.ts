@@ -175,17 +175,19 @@ export async function uploadAuctionPicture(event: APIGatewayProxyEvent) {
   const base64 = event.body.replace(/^data:image\/\w+;base64,/, '')
   const buffer = Buffer.from(base64, 'base64')
 
+  let updatedAuction
+
   try {
     const pictureUrl = await uploadPictureToS3(`${auction.id}.jpg`, buffer)
-    const updatedAuction = await setAuctionPictureUrl(auction.id, pictureUrl)
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(updatedAuction),
-    }
+    updatedAuction = await setAuctionPictureUrl(auction.id, pictureUrl)
   } catch (error) {
     console.error(error)
     throw new createError.InternalServerError(error)
+  }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(updatedAuction),
   }
 }
 
