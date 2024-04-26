@@ -75,7 +75,21 @@ const closeAuction = async (auction: Record<string, any>) => {
   const { title, seller, highestBid } = auction
   const { amount, bidder } = highestBid
 
-  // Send to the SQS Queue with the message
+  // If there are no bids, notify the seller
+  if (amount === 0) {
+    return await sqs.send(
+      new SendMessageCommand({
+        QueueUrl: process.env.MAIL_QUEUE_URL,
+        MessageBody: JSON.stringify({
+          subject: 'No bids on your auction item :(',
+          recipient: seller,
+          body: `Oh no! Your item "${title}" didn't get any bids. Better luck next time!`,
+        }),
+      }),
+    )
+  }
+
+  // Notify the seller and the bidder if the item was sold
   const notifySeller = sqs.send(
     new SendMessageCommand({
       QueueUrl: process.env.MAIL_QUEUE_URL,
