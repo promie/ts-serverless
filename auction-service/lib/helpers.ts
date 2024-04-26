@@ -1,9 +1,11 @@
 import { GetCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import { docClient } from './dynamoDBClients'
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs'
+import { S3Client, PutObjectCommand, ObjectCannedACL } from '@aws-sdk/client-s3'
 import * as createError from 'http-errors'
 
 const sqs = new SQSClient({ region: 'ap-southeast-2' })
+const s3 = new S3Client({ region: 'ap-southeast-2' })
 
 const getAuctionsById = async (id: string) => {
   let auction: Record<string, any>
@@ -115,4 +117,15 @@ const closeAuction = async (auction: Record<string, any>) => {
   return Promise.all([notifySeller, notifyBidder])
 }
 
-export { getAuctionsById, getEndedAuctions, closeAuction }
+const uploadPictureToS3 = async (key: string, body: Buffer) => {
+  const params = {
+    Bucket: process.env.AUCTIONS_BUCKET_NAME,
+    Key: key,
+    Body: body,
+    ACL: ObjectCannedACL.public_read,
+  }
+
+  return await s3.send(new PutObjectCommand(params))
+}
+
+export { getAuctionsById, getEndedAuctions, closeAuction, uploadPictureToS3 }
