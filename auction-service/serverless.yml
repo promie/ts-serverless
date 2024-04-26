@@ -103,6 +103,13 @@ functions:
           method: PATCH
           path: /auctions/{id}/bid
           authorizer: ${self:custom.authorizerArn}
+  uploadAuctionPicture:
+    handler: handler.uploadAuctionPictureHandler
+    events:
+      - http:
+          method: PATCH
+          path: /auctions/{id}/picture
+          authorizer: ${self:custom.authorizerArn}
   processAuctions:
     handler: handler.processAuctionsHandler
     events:
