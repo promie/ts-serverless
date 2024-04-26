@@ -54,6 +54,21 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+    AuctionsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.AuctionsBucket.name}
+
+    AuctionsBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref AuctionsBucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal: "*"
+              Action: s3:GetObject
+              Resource: arn:aws:s3:::${self:custom.AuctionsBucket.name}/*
 
 functions:
   createAuction:
@@ -100,3 +115,5 @@ custom:
   MailQueue:
     arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
     url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
+  AuctionsBucket:
+    name: auctions-bucket-py1986-${self:provider.stage}
