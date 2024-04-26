@@ -3,6 +3,7 @@ import jsonBodyParser from '@middy/http-json-body-parser'
 import httpEventNormalizer from '@middy/http-event-normalizer'
 import httpErrorHandler from '@middy/http-error-handler'
 import validator from '@middy/validator'
+import cors from '@middy/http-cors'
 import { transpileSchema } from '@middy/validator/transpile'
 
 /**
@@ -17,6 +18,7 @@ const writeRequestsMiddleware = (handler, schema = null) => {
     jsonBodyParser(),
     httpEventNormalizer(),
     httpErrorHandler(),
+    cors(),
   ])
 
   if (schema) {
@@ -34,6 +36,7 @@ const readRequestsMiddleware = (handler, schema = null) => {
   const middleware = middy(handler).use([
     httpEventNormalizer(),
     httpErrorHandler(),
+    cors(),
   ])
 
   if (schema) {
