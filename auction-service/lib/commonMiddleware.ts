@@ -43,4 +43,12 @@ const readRequestsMiddleware = (handler, schema = null) => {
   return middleware
 }
 
-export { writeRequestsMiddleware, readRequestsMiddleware }
+const imageUploadMiddleware = handler => {
+  return middy(handler).use([httpErrorHandler()])
+}
+
+export {
+  writeRequestsMiddleware,
+  readRequestsMiddleware,
+  imageUploadMiddleware,
+}
