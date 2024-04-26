@@ -9,6 +9,7 @@ provider:
   environment:
     AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
     MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
+    AUCTIONS_BUCKET_NAME: ${self:custom.AuctionsBucket.name}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -62,7 +63,11 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.AuctionsBucket.name}
-
+        LifecycleEventConfiguration:
+          Rules:
+            - Id: ExpirePictures
+              Status: Enabled
+              ExpirationInDays: 1
     AuctionsBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
