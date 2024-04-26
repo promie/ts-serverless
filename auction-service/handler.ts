@@ -5,7 +5,6 @@ import { PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import {
   writeRequestsMiddleware,
   readRequestsMiddleware,
-  imageUploadMiddleware,
 } from './lib/commonMiddleware'
 import { docClient } from './lib/dynamoDBClients'
 import * as createError from 'http-errors'
@@ -19,6 +18,7 @@ import {
 import getAuctionsSchema from './schemas/getAuctionsSchema'
 import createAuctionSchema from './schemas/createAuctionSchema'
 import placeBidSchema from './schemas/placeBidSchema'
+import uploadAuctionPictureSchema from './schemas/uploadAuctionPictureSchema'
 
 interface IAuction {
   title: string
@@ -227,5 +227,7 @@ export const getAuctionsHandler = readRequestsMiddleware(
 )
 export const getAuctionsByIdHandler = readRequestsMiddleware(getAuction)
 
-export const uploadAuctionPictureHandler =
-  imageUploadMiddleware(uploadAuctionPicture)
+export const uploadAuctionPictureHandler = writeRequestsMiddleware(
+  uploadAuctionPicture,
+  uploadAuctionPictureSchema,
+)
