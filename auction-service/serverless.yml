@@ -27,6 +27,10 @@ provider:
       Action:
         - sqs:SendMessage
       Resource: ${self:custom.MailQueue.arn}
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+      Resource: arn:aws:s3:::${self:custom.AuctionsBucket.name}/*
 
 resources:
   Resources:
