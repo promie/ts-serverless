@@ -171,7 +171,14 @@ export async function placeBid(event: APIGatewayProxyEvent) {
 
 export async function uploadAuctionPicture(event: APIGatewayProxyEvent) {
   const { id } = event.pathParameters
+  const { email } = event.requestContext.authorizer
   const auction = await getAuctionsById(id)
+
+  // Validate auction ownership
+  if (email !== auction.seller) {
+    throw new createError.Forbidden('You are not the seller of this auction!')
+  }
+
   const base64 = event.body.replace(/^data:image\/\w+;base64,/, '')
   const buffer = Buffer.from(base64, 'base64')
 
