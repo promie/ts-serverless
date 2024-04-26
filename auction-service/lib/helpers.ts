@@ -1,9 +1,17 @@
 import { GetCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import { docClient } from './dynamoDBClients'
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs'
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import * as createError from 'http-errors'
+import { ReturnValue } from '@aws-sdk/client-dynamodb'
 
 const sqs = new SQSClient({ region: 'ap-southeast-2' })
+const s3 = new S3Client({ region: 'ap-southeast-2' })
 
 const getAuctionsById = async (id: string) => {
   let auction: Record<string, any>
@@ -115,4 +123,47 @@ const closeAuction = async (auction: Record<string, any>) => {
   return Promise.all([notifySeller, notifyBidder])
 }
 
-export { getAuctionsById, getEndedAuctions, closeAuction }
+const uploadPictureToS3 = async (key: string, body: Buffer) => {
+  const params = {
+    Bucket: process.env.AUCTIONS_BUCKET_NAME,
+    Key: key,
+    Body: body,
+    ContentEncoding: 'base64',
+    ContentType: 'image/jpeg',
+  }
+
+  await s3.send(new PutObjectCommand(params))
+
+  const command = new PutObjectCommand({
+    Bucket: params.Bucket,
+    Key: params.Key,
+  })
+
+  const signedUrl = await getSignedUrl(s3, command)
+
+  return signedUrl
+}
+
+const setAuctionPictureUrl = async (id: string, pictureUrl: string) => {
+  const params = {
+    TableName: process.env.AUCTIONS_TABLE_NAME,
+    Key: { id },
+    UpdateExpression: 'set pictureUrl = :pictureUrl',
+    ExpressionAttributeValues: {
+      ':pictureUrl': pictureUrl,
+    },
+    ReturnValues: ReturnValue.ALL_NEW,
+  }
+
+  const result = await docClient.send(new UpdateCommand(params))
+
+  return result.Attributes
+}
+
+export {
+  getAuctionsById,
+  getEndedAuctions,
+  closeAuction,
+  uploadPictureToS3,
+  setAuctionPictureUrl,
+}

@@ -9,6 +9,7 @@ provider:
   environment:
     AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
     MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
+    AUCTIONS_BUCKET_NAME: ${self:custom.AuctionsBucket.name}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -62,17 +63,23 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.AuctionsBucket.name}
-
-    AuctionsBucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        Bucket: !Ref AuctionsBucket
-        PolicyDocument:
-          Statement:
-            - Effect: Allow
-              Principal: "*"
-              Action: s3:GetObject
-              Resource: arn:aws:s3:::${self:custom.AuctionsBucket.name}/*
+        LifecycleConfiguration:
+          Rules:
+            - Id: ExpirePictures
+              Status: Enabled
+              ExpirationInDays: 1
+#    AuctionsBucketPolicy:
+#      Type: AWS::S3::BucketPolicy
+#      Properties:
+#        Bucket: !Ref AuctionsBucket
+#        PolicyDocument:
+#          Version: "2012-10-17"
+#          Statement:
+#            - Sid: "PublicRead"
+#              Effect: "Allow"
+#              Principal: "*"
+#              Action: "s3:GetObject"
+#              Resource: "arn:aws:s3:::${self:custom.AuctionsBucket.name}/*"
 
 functions:
   createAuction:
@@ -102,6 +109,13 @@ functions:
       - http:
           method: PATCH
           path: /auctions/{id}/bid
+          authorizer: ${self:custom.authorizerArn}
+  uploadAuctionPicture:
+    handler: handler.uploadAuctionPictureHandler
+    events:
+      - http:
+          method: PATCH
+          path: /auctions/{id}/picture
           authorizer: ${self:custom.authorizerArn}
   processAuctions:
     handler: handler.processAuctionsHandler

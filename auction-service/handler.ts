@@ -8,10 +8,17 @@ import {
 } from './lib/commonMiddleware'
 import { docClient } from './lib/dynamoDBClients'
 import * as createError from 'http-errors'
-import { getAuctionsById, getEndedAuctions, closeAuction } from './lib/helpers'
+import {
+  getAuctionsById,
+  getEndedAuctions,
+  closeAuction,
+  uploadPictureToS3,
+  setAuctionPictureUrl,
+} from './lib/helpers'
 import getAuctionsSchema from './schemas/getAuctionsSchema'
 import createAuctionSchema from './schemas/createAuctionSchema'
 import placeBidSchema from './schemas/placeBidSchema'
+import uploadAuctionPictureSchema from './schemas/uploadAuctionPictureSchema'
 
 interface IAuction {
   title: string
@@ -162,6 +169,35 @@ export async function placeBid(event: APIGatewayProxyEvent) {
   }
 }
 
+export async function uploadAuctionPicture(event: APIGatewayProxyEvent) {
+  const { id } = event.pathParameters
+  const { email } = event.requestContext.authorizer
+  const auction = await getAuctionsById(id)
+
+  // Validate auction ownership
+  if (email !== auction.seller) {
+    throw new createError.Forbidden('You are not the seller of this auction!')
+  }
+
+  const base64 = event.body.replace(/^data:image\/\w+;base64,/, '')
+  const buffer = Buffer.from(base64, 'base64')
+
+  let updatedAuction
+
+  try {
+    const pictureUrl = await uploadPictureToS3(`${auction.id}.jpg`, buffer)
+    updatedAuction = await setAuctionPictureUrl(auction.id, pictureUrl)
+  } catch (error) {
+    console.error(error)
+    throw new createError.InternalServerError(error)
+  }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(updatedAuction),
+  }
+}
+
 export async function processAuctionsHandler(event: APIGatewayProxyEvent) {
   try {
     const auctionsToClose = await getEndedAuctions()
@@ -190,3 +226,8 @@ export const getAuctionsHandler = readRequestsMiddleware(
   getAuctionsSchema,
 )
 export const getAuctionsByIdHandler = readRequestsMiddleware(getAuction)
+
+export const uploadAuctionPictureHandler = writeRequestsMiddleware(
+  uploadAuctionPicture,
+  uploadAuctionPictureSchema,
+)
