@@ -8,6 +8,7 @@ import {
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import * as createError from 'http-errors'
+import { ReturnValue } from '@aws-sdk/client-dynamodb'
 
 const sqs = new SQSClient({ region: 'ap-southeast-2' })
 const s3 = new S3Client({ region: 'ap-southeast-2' })
@@ -143,4 +144,26 @@ const uploadPictureToS3 = async (key: string, body: Buffer) => {
   return signedUrl
 }
 
-export { getAuctionsById, getEndedAuctions, closeAuction, uploadPictureToS3 }
+const setAuctionPictureUrl = async (id: string, pictureUrl: string) => {
+  const params = {
+    TableName: process.env.AUCTIONS_TABLE_NAME,
+    Key: { id },
+    UpdateExpression: 'set pictureUrl = :pictureUrl',
+    ExpressionAttributeValues: {
+      ':pictureUrl': pictureUrl,
+    },
+    ReturnValues: ReturnValue.ALL_NEW,
+  }
+
+  const result = await docClient.send(new UpdateCommand(params))
+
+  return result.Attributes
+}
+
+export {
+  getAuctionsById,
+  getEndedAuctions,
+  closeAuction,
+  uploadPictureToS3,
+  setAuctionPictureUrl,
+}

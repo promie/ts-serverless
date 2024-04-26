@@ -14,6 +14,7 @@ import {
   getEndedAuctions,
   closeAuction,
   uploadPictureToS3,
+  setAuctionPictureUrl,
 } from './lib/helpers'
 import getAuctionsSchema from './schemas/getAuctionsSchema'
 import createAuctionSchema from './schemas/createAuctionSchema'
@@ -176,22 +177,11 @@ export async function uploadAuctionPicture(event: APIGatewayProxyEvent) {
 
   try {
     const pictureUrl = await uploadPictureToS3(`${auction.id}.jpg`, buffer)
-
-    const params = {
-      TableName: process.env.AUCTIONS_TABLE_NAME,
-      Key: { id },
-      UpdateExpression: 'set pictureUrl = :pictureUrl',
-      ExpressionAttributeValues: {
-        ':pictureUrl': pictureUrl,
-      },
-      ReturnValues: ReturnValue.ALL_NEW,
-    }
-
-    const result = await docClient.send(new UpdateCommand(params))
+    const updatedAuction = await setAuctionPictureUrl(auction.id, pictureUrl)
 
     return {
       statusCode: 200,
-      body: JSON.stringify(result.Attributes),
+      body: JSON.stringify(updatedAuction),
     }
   } catch (error) {
     console.error(error)
